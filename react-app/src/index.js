@@ -5,14 +5,11 @@ import * as tf from '@tensorflow/tfjs';
 import "./styles.css";
 tf.setBackend('webgl');
 
-const threshold = 0.99;
-
 async function load_model() {
   // It's possible to load the model locally or from a repo
   // You can choose whatever IP and PORT you want in the "http://127.0.0.1:8080/model.json" just set it before in your https server
   //const model = await loadGraphModel("http://127.0.0.1:8080/model.json");
   const model = await tf.loadLayersModel("https://raw.githubusercontent.com/AIZOOTech/mask-detection-web-demo/master/tfjs-models/model.json");
-  console.log(model)
   return model;
 }
 
@@ -127,6 +124,17 @@ class App extends React.Component {
   videoRef = React.createRef();
   canvasRef = React.createRef();
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      threshold: 0.75
+    };
+  }
+  onThresholdChange(value) {
+    this.setState({
+      threshold: value
+    });
+  }
 
   componentDidMount() {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -182,31 +190,31 @@ class App extends React.Component {
     return img;
   };
 
-  buildDetectedObjects(scores, threshold, boxes, classes, classesDir) {
-    const detectionObjects = []
-    var video_frame = document.getElementById('frame');
+  // buildDetectedObjects(scores, threshold, boxes, classes, classesDir) {
+  //   const detectionObjects = []
+  //   var video_frame = document.getElementById('frame');
 
-    scores.forEach((score, i) => {
-      if (score > threshold) {
-        const bbox = [];
-        const minY = boxes[i][0] * video_frame.offsetHeight;
-        const minX = boxes[i][1] * video_frame.offsetWidth;
-        const maxY = boxes[i][2] * video_frame.offsetHeight;
-        const maxX = boxes[i][3] * video_frame.offsetWidth;
-        bbox[0] = minX;
-        bbox[1] = minY;
-        bbox[2] = maxX - minX;
-        bbox[3] = maxY - minY;
-        detectionObjects.push({
-          class: classes[i],
-          label: classesDir[classes[i]].name,
-          score: score.toFixed(4),
-          bbox: bbox
-        })
-      }
-    })
-    return detectionObjects
-  }
+  //   scores.forEach((score, i) => {
+  //     if (score > threshold) {
+  //       const bbox = [];
+  //       const minY = boxes[i][0] * video_frame.offsetHeight;
+  //       const minX = boxes[i][1] * video_frame.offsetWidth;
+  //       const maxY = boxes[i][2] * video_frame.offsetHeight;
+  //       const maxX = boxes[i][3] * video_frame.offsetWidth;
+  //       bbox[0] = minX;
+  //       bbox[1] = minY;
+  //       bbox[2] = maxX - minX;
+  //       bbox[3] = maxY - minY;
+  //       detectionObjects.push({
+  //         class: classes[i],
+  //         label: classesDir[classes[i]].name,
+  //         score: score.toFixed(4),
+  //         bbox: bbox
+  //       })
+  //     }
+  //   })
+  //   return detectionObjects
+  // }
 
   renderPredictions = predictions => {
     this.canvasRef.current.width = 600
@@ -232,7 +240,7 @@ class App extends React.Component {
       var classID = bboxInfo[1];
       var score = bboxInfo[2];
 
-      if (score <= threshold) {
+      if (score <= this.state.threshold) {
         continue
       }
 
@@ -261,9 +269,16 @@ class App extends React.Component {
     return (
       <div>
         <h1>Real-Time Face Mask Detection: </h1>
-        <h3><a href="https://github.com/AIZOOTech/mask-detection-web-demo">https://github.com/AIZOOTech/mask-detection-web-demo</a></h3>
+        <h3>Model from <a href="https://github.com/AIZOOTech/mask-detection-web-demo">https://github.com/AIZOOTech/mask-detection-web-demo</a></h3>
+        <br />
+        <div>
+          Threshold: <input type="text"
+            className="form-control"
+            value={this.state.threshold}
+            onChange={e => this.onThresholdChange(e.target.value)} />
+        </div>
         <video
-          style={{ marginTop: '100px', height: '500px', width: "600px" }}
+          style={{ marginTop: '165px', height: '500px', width: "600px" }}
           className="size"
           autoPlay
           playsInline
@@ -274,7 +289,7 @@ class App extends React.Component {
           id="frame"
         />
         <canvas
-          style={{ marginTop: '100px' }}
+          style={{ marginTop: '165px' }}
           className="size"
           ref={this.canvasRef}
           width="600"
