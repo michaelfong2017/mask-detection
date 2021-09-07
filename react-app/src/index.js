@@ -1,5 +1,11 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
+import {
+  HashRouter,
+  Switch,
+  Route,
+} from "react-router-dom";
+
 import * as tf from '@tensorflow/tfjs';
 // import {loadGraphModel} from '@tensorflow/tfjs-converter';
 import "./styles.css";
@@ -120,7 +126,7 @@ async function nonMaxSuppression(bboxes, confidences, confThresh, iouThresh, wid
   return results;
 }
 
-class App extends React.Component {
+class SSD extends React.Component {
   videoRef = React.createRef();
   canvasRef = React.createRef();
 
@@ -268,8 +274,8 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <h1>Real-Time Face Mask Detection: </h1>
-        <h3>Model from <a href="https://github.com/AIZOOTech/mask-detection-web-demo">https://github.com/AIZOOTech/mask-detection-web-demo</a></h3>
+        <h1>Real-Time Face Mask Detection </h1>
+        <h3>Single Shot MultiBox Detector (SSD). Model from <a href="https://github.com/AIZOOTech/mask-detection-web-demo">https://github.com/AIZOOTech/mask-detection-web-demo</a>.</h3>
         <br />
         <div>
           Threshold: <input type="text"
@@ -295,9 +301,75 @@ class App extends React.Component {
           width="600"
           height="500"
         />
+        <h3 style={{ marginTop: "500px" }}><a href="#">Faster R-CNN</a></h3>
       </div>
     );
   }
+}
+
+const App = () => {
+  return (
+    <HashRouter hashType="noslash">
+      <Switch>
+        <Route path="/ssd" component={SSD} />
+        <Route path="/" component={FasterRCNN} />
+      </Switch>
+
+    </HashRouter>
+  )
+}
+
+function useToggle(initialValue = true) {
+  const [value, setValue] = React.useState(initialValue);
+  const toggle = React.useCallback(() => {
+    setValue(v => !v);
+  }, []);
+  return [value, toggle];
+}
+const FasterRCNN = () => {
+  const [isOn, toggleIsOn] = useToggle()
+  const videoRef = useRef(null)
+
+  useEffect(() => {
+    let lastTime = videoRef.current.currentTime
+    videoRef.current.load()
+    videoRef.current.currentTime = lastTime
+    videoRef.current.play()
+  }, [isOn])
+
+  return (
+    <div>
+      <h1>Group M - Faster R-CNN Face Mask Detection </h1>
+      <h3>A custom Faster R-CNN model is trained using custom data and configuration.</h3>
+      <h3>To reproduce, please follow our tutorial on Github: <a target="_blank" href="https://github.com/JiaminWoo/Face_Mask_Detection">https://github.com/JiaminWoo/Face_Mask_Detection</a>.</h3>
+
+      <br />
+
+      <div style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start"
+      }}>
+        <div style={{ marginLeft: "10px", fontSize: "1.5rem" }} >
+          {isOn === true ? 'HD on' : 'HD off'}
+        </div>
+        <label className="switch" style={{ transform: "scale(0.7)" }}>
+          <input type="checkbox" defaultChecked onClick={toggleIsOn} />
+          <span className="slider round"></span>
+        </label>
+      </div>
+
+      <div style={{ marginTop: "5px" }} />
+
+      <video ref={videoRef} style={{ position: "relative" }} width="750" height="500" controls >
+        <source src={isOn === true ? "/video_2240x1572.mp4" : "/video_1280x960.mp4"} type="video/mp4" />
+      </video>
+      <br />
+      <br />
+      <br />
+      <a href="#ssd">SSD</a>
+    </div>
+  )
 }
 
 const rootElement = document.getElementById("root");

@@ -9,9 +9,10 @@
     "@tensorflow/tfjs-converter": "^1.7.4",
     "@tensorflow/tfjs-core": "^1.7.4",
     "@tensorflow/tfjs-node": "^1.7.4",
-    "react": "16.5.2",
-    "react-dom": "16.5.2",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
     "react-magic-dropzone": "1.0.1",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "2.0.3"
   },
   "devDependencies": {},
